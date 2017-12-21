@@ -3,6 +3,7 @@ package com.github.onsdigital.fanoutcascade.pool;
 import com.github.onsdigital.fanoutcascade.handlertasks.HandlerTask;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,6 +28,14 @@ public class FanoutCascadeLayer {
             throw new RuntimeException("No Handler registered for HandlerTask " + handlerTask.getClass());
         }
         this.tasks.put(handlerTask, this.executorService.submit(handlerTask));
+    }
+
+    public Set<HandlerTask> getKeySet() {
+        return this.tasks.keySet();
+    }
+
+    public Future<Object> getFuture(HandlerTask task) {
+        return this.tasks.get(task);
     }
 
 }
