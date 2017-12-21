@@ -38,4 +38,13 @@ public class FanoutCascadeLayer {
         return this.tasks.get(task);
     }
 
+    public synchronized boolean isFinished() {
+        for (HandlerTask task : this.getKeySet()) {
+            if (!this.tasks.get(task).isDone()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }
