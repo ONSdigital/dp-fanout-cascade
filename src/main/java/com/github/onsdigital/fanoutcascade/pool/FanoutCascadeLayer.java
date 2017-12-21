@@ -15,7 +15,7 @@ import java.util.concurrent.Future;
  * @author sullid (David Sullivan) on 21/12/2017
  * @project dp-fanout-cascade
  */
-public class FanoutCascadeLayer {
+public class FanoutCascadeLayer implements AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FanoutCascadeLayer.class);
 
@@ -58,4 +58,14 @@ public class FanoutCascadeLayer {
         return true;
     }
 
+    public synchronized boolean isShutdown() {
+        return this.executorService.isShutdown();
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (!this.executorService.isShutdown()) {
+            this.executorService.shutdown();
+        }
+    }
 }
