@@ -31,7 +31,8 @@ public class FanoutCascadeLayer {
         if (!FanoutCascadeRegistry.getInstance().handlerRegisteredForTask(handlerTask.getClass())) {
             throw new RuntimeException("No Handler registered for HandlerTask " + handlerTask.getClass());
         }
-        if (LOGGER.isDebugEnabled()) LOGGER.debug(String.format("Submitting task %s to layer.", handlerTask.getClass().getName()));
+        if (LOGGER.isDebugEnabled())
+            LOGGER.debug(String.format("Submitting task %s to layer.", handlerTask.getClass().getName()));
         this.tasks.put(handlerTask, this.executorService.submit(handlerTask));
     }
 
@@ -39,11 +40,16 @@ public class FanoutCascadeLayer {
         return this.tasks.keySet();
     }
 
-    public Future<Object> getFuture(HandlerTask task) {
-        return this.tasks.get(task);
+    /**
+     *
+     * @param task
+     * @return Future<Object>, which is removed from the task list
+     */
+    public synchronized Future<Object> popFuture(HandlerTask task) {
+        return this.tasks.remove(task);
     }
 
-    public synchronized boolean isFinished() {
+    public synchronized boolean isIdle() {
         for (HandlerTask task : this.getKeySet()) {
             if (!this.tasks.get(task).isDone()) {
                 return false;

@@ -1,13 +1,16 @@
 package com.github.onsdigital.fanoutcascade;
 
+import com.github.onsdigital.fanoutcascade.handlers.TestConsoleHandler;
 import com.github.onsdigital.fanoutcascade.handlers.TestHandler;
+import com.github.onsdigital.fanoutcascade.handlertasks.TestConsoleTask;
 import com.github.onsdigital.fanoutcascade.handlertasks.TestHandlerTask;
 import com.github.onsdigital.fanoutcascade.pool.FanoutCascade;
-import com.github.onsdigital.fanoutcascade.pool.FanoutCascadeLayer;
 import com.github.onsdigital.fanoutcascade.pool.FanoutCascadeRegistry;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -18,10 +21,13 @@ import static org.junit.Assert.assertFalse;
  */
 public class TestFanoutCascade {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestHandlerTask.class);
+
     @Test
     public void testRegister() {
         FanoutCascadeRegistry cascadeRegistry = FanoutCascadeRegistry.getInstance();
         cascadeRegistry.register(TestHandlerTask.class, TestHandler.class, 8);
+        cascadeRegistry.register(TestConsoleTask.class, TestConsoleHandler.class, 8);
 
         assertTrue(cascadeRegistry.handlerRegisteredForTask(TestHandlerTask.class));
 
@@ -52,6 +58,7 @@ public class TestFanoutCascade {
         expectedEx.expectMessage(expectedMessage);
 
         // Should fail
+        LOGGER.info("Note: RuntimeException is expected.");
         FanoutCascade.getInstance().getLayerForTask(TestHandlerTask.class).submit(task);
     }
 

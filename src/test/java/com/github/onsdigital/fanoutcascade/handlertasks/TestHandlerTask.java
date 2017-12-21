@@ -9,9 +9,7 @@ public class TestHandlerTask extends HandlerTask {
         super(TestHandlerTask.class);
     }
 
-    public String getMessage() {
-        long threadId = Thread.currentThread().getId();
-        String message = "Hello, world from thread " + threadId;
-        return message;
+    public TestConsoleTask getConsoleTask() {
+        return new TestConsoleTask();
     }
 }
