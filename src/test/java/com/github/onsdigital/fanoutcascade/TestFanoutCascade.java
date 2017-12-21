@@ -41,7 +41,7 @@ public class TestFanoutCascade {
 
     @Test
     public void testFailWithoutRegister() {
-        // Tests that the cascade fails without registration of task
+        // Tests that the cascade fails without registration of task with the correct message
 
         TestHandlerTask task = new TestHandlerTask();
 

@@ -1,6 +1,8 @@
 package com.github.onsdigital.fanoutcascade.pool;
 
 import com.github.onsdigital.fanoutcascade.handlertasks.HandlerTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,6 +12,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @project dp-fanout-cascade
  */
 public class FanoutCascade {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FanoutCascade.class);
 
     private Map<Class<? extends HandlerTask>, FanoutCascadeLayer> layers;
 
@@ -37,7 +41,10 @@ public class FanoutCascade {
 
     public FanoutCascadeLayer getLayerForTask(Class<? extends HandlerTask> clazz) {
         if (!this.hasLayer(clazz)) {
-            throw new RuntimeException("No layer registered for class " + clazz.getName());
+            String message = "No layer registered for class " + clazz.getName();
+            RuntimeException e = new RuntimeException(message);
+            LOGGER.error(message, e);
+            throw e;
         }
         return layers.get(clazz);
     }
