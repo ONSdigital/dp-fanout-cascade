@@ -3,10 +3,14 @@ package com.github.onsdigital.fanoutcascade;
 import com.github.onsdigital.fanoutcascade.handlers.TestHandler;
 import com.github.onsdigital.fanoutcascade.handlertasks.TestHandlerTask;
 import com.github.onsdigital.fanoutcascade.pool.FanoutCascade;
+import com.github.onsdigital.fanoutcascade.pool.FanoutCascadeLayer;
 import com.github.onsdigital.fanoutcascade.pool.FanoutCascadeRegistry;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author sullid (David Sullivan) on 21/12/2017
@@ -15,7 +19,7 @@ import static junit.framework.TestCase.assertTrue;
 public class TestFanoutCascade {
 
     @Test
-    public void test() {
+    public void testRegister() {
         FanoutCascadeRegistry cascadeRegistry = FanoutCascadeRegistry.getInstance();
         cascadeRegistry.register(TestHandlerTask.class, TestHandler.class, 8);
 
@@ -30,6 +34,25 @@ public class TestFanoutCascade {
             FanoutCascade.getInstance().getLayerForTask(TestHandlerTask.class).submit(task);
             count--;
         }
+    }
+
+    @Rule
+    public ExpectedException expectedEx = ExpectedException.none();
+
+    @Test
+    public void testFailWithoutRegister() {
+        // Tests that the cascade fails without registration of task
+
+        TestHandlerTask task = new TestHandlerTask();
+
+        assertFalse(FanoutCascadeRegistry.getInstance().handlerRegisteredForTask(TestHandlerTask.class));
+
+        expectedEx.expect(RuntimeException.class);
+        String expectedMessage = String.format("No layer registered for class " + TestHandlerTask.class.getName());
+        expectedEx.expectMessage(expectedMessage);
+
+        // Should fail
+        FanoutCascade.getInstance().getLayerForTask(TestHandlerTask.class).submit(task);
     }
 
 }

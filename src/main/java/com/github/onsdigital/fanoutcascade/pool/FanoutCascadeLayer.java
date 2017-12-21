@@ -22,7 +22,7 @@ public class FanoutCascadeLayer {
     private ExecutorService executorService;
     private Map<HandlerTask, Future<Object>> tasks;
 
-    public FanoutCascadeLayer(int numThreads) {
+    protected FanoutCascadeLayer(int numThreads) {
         this.executorService = Executors.newFixedThreadPool(numThreads);
         this.tasks = new ConcurrentHashMap<HandlerTask, Future<Object>>();
     }
