@@ -24,8 +24,12 @@ public class TestFanoutCascade {
         TestHandlerTask task = new TestHandlerTask();
         assertTrue(FanoutCascade.getInstance().hasLayer(TestHandlerTask.class));
 
-        // Submit this task to the cascade
-        FanoutCascade.getInstance().getLayerForTask(TestHandlerTask.class).submit(task);
+        // Submit this task to the cascade 10 times
+        int count = 10;
+        while (count > 0) {
+            FanoutCascade.getInstance().getLayerForTask(TestHandlerTask.class).submit(task);
+            count--;
+        }
     }
 
 }

@@ -32,6 +32,7 @@ public class FanoutCascadeRegistry {
         return taskRegistry.get(clazz);
     }
 
+    // Registers a handler for this task and creates a dedicated FanoutCascade layer
     public void register(Class<? extends HandlerTask> task, Class<? extends Handler> handler, int numThreads) {
         taskRegistry.put(task, handler);
         FanoutCascade.getInstance().registerLayer(task, numThreads);
