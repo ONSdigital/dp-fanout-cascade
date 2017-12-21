@@ -15,7 +15,7 @@ import java.util.concurrent.Callable;
  */
 public abstract class HandlerTask implements Callable<Object> {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(HandlerTask.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HandlerTask.class);
     private Class<? extends HandlerTask> handlerTask;
 
     public HandlerTask(Class<? extends HandlerTask> handlerTask) {

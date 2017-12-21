@@ -1,6 +1,8 @@
 package com.github.onsdigital.fanoutcascade.pool;
 
 import com.github.onsdigital.fanoutcascade.handlertasks.HandlerTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +17,8 @@ import java.util.concurrent.Future;
  */
 public class FanoutCascadeLayer {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(FanoutCascadeLayer.class);
+
     private ExecutorService executorService;
     private Map<HandlerTask, Future<Object>> tasks;
 
@@ -27,6 +31,7 @@ public class FanoutCascadeLayer {
         if (!FanoutCascadeRegistry.getInstance().handlerRegisteredForTask(handlerTask.getClass())) {
             throw new RuntimeException("No Handler registered for HandlerTask " + handlerTask.getClass());
         }
+        if (LOGGER.isDebugEnabled()) LOGGER.debug(String.format("Submitting task %s to layer.", handlerTask.getClass().getName()));
         this.tasks.put(handlerTask, this.executorService.submit(handlerTask));
     }
 
