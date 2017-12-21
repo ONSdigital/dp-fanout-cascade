@@ -1,10 +1,12 @@
 package com.github.onsdigital.fanoutcascade.handlertasks;
 
 import com.github.onsdigital.fanoutcascade.handlers.Handler;
+import com.github.onsdigital.fanoutcascade.pool.FanoutCascade;
 import com.github.onsdigital.fanoutcascade.pool.FanoutCascadeRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.concurrent.Callable;
 
 /**
@@ -20,8 +22,15 @@ public abstract class HandlerTask implements Callable<Object> {
         this.handlerTask = handlerTask;
     }
 
-    @SuppressWarnings("unchecked")
+    private void handleTask(HandlerTask task) {
+        Class<? extends HandlerTask> taskClazz = task.getClass();
+        if (FanoutCascade.getInstance().hasLayer(taskClazz)) {
+            FanoutCascade.getInstance().getLayerForTask(taskClazz).submit(task);
+        }
+    }
+
     @Override
+    @SuppressWarnings("unchecked")
     public Object call() throws Exception {
         Class<? extends Handler> clazz = FanoutCascadeRegistry.getInstance().getHandlerForTask(this.handlerTask);
         try {
@@ -30,7 +39,16 @@ public abstract class HandlerTask implements Callable<Object> {
 
             if (obj instanceof HandlerTask) {
                 // Submit back into the cascade
-//                FanoutCascade.getInstance().getLayer().submit((HandlerTask) obj);
+                HandlerTask task = (HandlerTask) obj;
+                this.handleTask(task);
+            } else if (obj instanceof Collection<?>) {
+                Collection<?> collection = (Collection<?>) obj;
+                for (Object o : collection) {
+                    if (o instanceof HandlerTask) {
+                        HandlerTask task = (HandlerTask) o;
+                        this.handleTask(task);
+                    }
+                }
             }
             return obj;
         } catch (InstantiationException e) {
