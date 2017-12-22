@@ -22,6 +22,7 @@ public abstract class HandlerTask implements Callable<Object> {
         this.handlerTask = handlerTask;
     }
 
+    // Submit a task back into the cascade
     private void handleTask(HandlerTask task) {
         Class<? extends HandlerTask> taskClazz = task.getClass();
         if (FanoutCascade.getInstance().hasLayer(taskClazz)) {
@@ -56,6 +57,7 @@ public abstract class HandlerTask implements Callable<Object> {
         } catch (IllegalAccessException e) {
             LOGGER.error("Unable to instantiate class (illegal access)", e);
         }
+        // Nothing to return
         return null;
     }
 }

@@ -2,10 +2,12 @@ package com.github.onsdigital.fanoutcascade;
 
 import com.github.onsdigital.fanoutcascade.handlers.TestConsoleHandler;
 import com.github.onsdigital.fanoutcascade.handlers.TestHandler;
+import com.github.onsdigital.fanoutcascade.handlertasks.FanoutCascadeMonitoringTask;
 import com.github.onsdigital.fanoutcascade.handlertasks.TestConsoleTask;
 import com.github.onsdigital.fanoutcascade.handlertasks.TestHandlerTask;
 import com.github.onsdigital.fanoutcascade.pool.FanoutCascade;
 import com.github.onsdigital.fanoutcascade.pool.FanoutCascadeRegistry;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -26,8 +28,12 @@ public class TestFanoutCascade {
     @Test
     public void testRegister() {
         FanoutCascadeRegistry cascadeRegistry = FanoutCascadeRegistry.getInstance();
+        cascadeRegistry.registerMonitoringThread();
         cascadeRegistry.register(TestHandlerTask.class, TestHandler.class, 8);
         cascadeRegistry.register(TestConsoleTask.class, TestConsoleHandler.class, 8);
+
+        // Submit the monitoring thread
+        FanoutCascade.getInstance().getLayerForTask(FanoutCascadeMonitoringTask.class).submit(new FanoutCascadeMonitoringTask());
 
         assertTrue(cascadeRegistry.handlerRegisteredForTask(TestHandlerTask.class));
 
@@ -39,6 +45,25 @@ public class TestFanoutCascade {
         while (count > 0) {
             FanoutCascade.getInstance().getLayerForTask(TestHandlerTask.class).submit(task);
             count--;
+        }
+
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            Assert.fail(e.getMessage());
+        }
+
+        try {
+            FanoutCascade.getInstance().close();
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
+        while (!FanoutCascade.getInstance().isShutdown()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Assert.fail(e.getMessage());
+            }
         }
     }
 

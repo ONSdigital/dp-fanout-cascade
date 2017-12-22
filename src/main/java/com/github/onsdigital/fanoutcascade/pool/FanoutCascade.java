@@ -16,12 +16,13 @@ public class FanoutCascade implements AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FanoutCascade.class);
 
-    private Map<Class<? extends HandlerTask>, FanoutCascadeLayer> layers;
-
     private static FanoutCascade INSTANCE = new FanoutCascade();
 
+    private Map<Class<? extends HandlerTask>, FanoutCascadeLayer> layers;
+    private boolean registeredShutdown = false;
+
     private FanoutCascade() {
-        this.layers = new ConcurrentHashMap<Class<? extends HandlerTask>, FanoutCascadeLayer>();
+        this.layers = new ConcurrentHashMap<>();
     }
 
     public static FanoutCascade getInstance() {
@@ -64,9 +65,14 @@ public class FanoutCascade implements AutoCloseable {
         return true;
     }
 
+    public boolean isRegisteredShutdown() {
+        return registeredShutdown;
+    }
+
     @Override
     public void close() throws Exception {
         // Triggers close on all layers
+        this.registeredShutdown = true;
         for (Class<? extends HandlerTask> clazz : getInstance().getRegisteredTasks()) {
             getInstance().getLayerForTask(clazz).close();
         }

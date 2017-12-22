@@ -40,6 +40,10 @@ public class FanoutCascadeLayer implements AutoCloseable {
         return this.tasks.keySet();
     }
 
+    public Future<Object> getFuture(HandlerTask task) {
+        return this.tasks.get(task);
+    }
+
     /**
      *
      * @param task

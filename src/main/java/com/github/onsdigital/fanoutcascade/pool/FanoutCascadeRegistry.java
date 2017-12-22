@@ -1,6 +1,8 @@
 package com.github.onsdigital.fanoutcascade.pool;
 
+import com.github.onsdigital.fanoutcascade.handlers.FanoutCascadeMonitoringHandler;
 import com.github.onsdigital.fanoutcascade.handlers.Handler;
+import com.github.onsdigital.fanoutcascade.handlertasks.FanoutCascadeMonitoringTask;
 import com.github.onsdigital.fanoutcascade.handlertasks.HandlerTask;
 
 import java.util.Map;
@@ -17,7 +19,7 @@ public class FanoutCascadeRegistry {
     private static FanoutCascadeRegistry INSTANCE = new FanoutCascadeRegistry();
 
     private FanoutCascadeRegistry() {
-        this.taskRegistry = new ConcurrentHashMap<Class<? extends HandlerTask>, Class<? extends Handler>>();
+        this.taskRegistry = new ConcurrentHashMap<>();
     }
 
     public static FanoutCascadeRegistry getInstance() {
@@ -30,6 +32,13 @@ public class FanoutCascadeRegistry {
 
     public Class<? extends Handler> getHandlerForTask(Class<? extends HandlerTask> clazz) {
         return taskRegistry.get(clazz);
+    }
+
+    public void registerMonitoringThread() {
+        if (!taskRegistry.containsKey(FanoutCascadeMonitoringTask.class)) {
+            taskRegistry.put(FanoutCascadeMonitoringTask.class, FanoutCascadeMonitoringHandler.class);
+            FanoutCascade.getInstance().registerLayer(FanoutCascadeMonitoringTask.class, 1);
+        }
     }
 
     // Registers a handler for this task and creates a dedicated FanoutCascade layer
