@@ -32,7 +32,7 @@ public class FanoutCascade implements AutoCloseable {
         return this.layers.containsKey(clazz);
     }
 
-    public void registerLayer(Class<? extends HandlerTask> clazz, int numThreads) {
+    protected void registerLayer(Class<? extends HandlerTask> clazz, int numThreads) {
         if (!this.hasLayer(clazz)) {
             this.layers.put(clazz, new FanoutCascadeLayer(numThreads));
         } else {
