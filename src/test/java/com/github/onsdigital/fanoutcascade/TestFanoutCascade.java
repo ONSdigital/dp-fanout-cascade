@@ -3,9 +3,11 @@ package com.github.onsdigital.fanoutcascade;
 import com.github.onsdigital.fanoutcascade.handlers.TestConsoleHandler;
 import com.github.onsdigital.fanoutcascade.handlers.TestHandler;
 import com.github.onsdigital.fanoutcascade.handlertasks.FanoutCascadeMonitoringTask;
+import com.github.onsdigital.fanoutcascade.handlertasks.HandlerTask;
 import com.github.onsdigital.fanoutcascade.handlertasks.TestConsoleTask;
 import com.github.onsdigital.fanoutcascade.handlertasks.TestHandlerTask;
 import com.github.onsdigital.fanoutcascade.pool.FanoutCascade;
+import com.github.onsdigital.fanoutcascade.pool.FanoutCascadeLayer;
 import com.github.onsdigital.fanoutcascade.pool.FanoutCascadeRegistry;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -14,7 +16,12 @@ import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 /**
@@ -31,6 +38,9 @@ public class TestFanoutCascade {
         cascadeRegistry.registerMonitoringThread();
         cascadeRegistry.register(TestHandlerTask.class, TestHandler.class, 8);
         cascadeRegistry.register(TestConsoleTask.class, TestConsoleHandler.class, 8);
+
+        // Register shutdown hook
+        FanoutCascade.getInstance().registerShutdownThread();
 
         // Submit the monitoring thread
         FanoutCascade.getInstance().getLayerForTask(FanoutCascadeMonitoringTask.class).submit(new FanoutCascadeMonitoringTask());
@@ -65,6 +75,36 @@ public class TestFanoutCascade {
                 Assert.fail(e.getMessage());
             }
         }
+
+        // Pop the result
+        FanoutCascadeLayer layer = FanoutCascade.getInstance().getLayerForTask(TestHandlerTask.class);
+        Future<Object> future = layer.getFuture(task);
+
+        while (!future.isDone()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Assert.fail(e.getMessage());
+            }
+        }
+
+        try {
+            Object obj = future.get();
+
+            // Assert it produced a TestConsoleTask
+            assertTrue(obj instanceof TestConsoleTask);
+        } catch (InterruptedException | ExecutionException e) {
+            Assert.fail(e.getMessage());
+        }
+
+        // Assert all tasks were purged
+        assertEquals(new HashSet<HandlerTask>(), FanoutCascade.getInstance().getLayerForTask(TestConsoleTask.class).getKeySet());
+
+        // Purge shutdown layers
+        FanoutCascade.getInstance().purgeShutdownLayers();
+
+        // Assert no layers
+        assertEquals(new HashSet<Class<? extends HandlerTask>>(), FanoutCascade.getInstance().getRegisteredTasks());
     }
 
     @Rule

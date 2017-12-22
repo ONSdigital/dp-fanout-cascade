@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author sullid (David Sullivan) on 22/12/2017
@@ -43,7 +44,8 @@ public class FanoutCascadeMonitoringHandler implements Handler {
                             Object result = future.get();
                             if (null == result) {
                                 // Purge this task
-                                LOGGER.info("FanoutCascadeMonitoringHandler found null result, purging");
+                                String message = String.format("FanoutCascadeMonitoringHandler found null result in layer %s, purging", layer);
+                                LOGGER.info(message);
                                 layer.popFuture(task);
                             }
                         } catch (InterruptedException e) {
@@ -54,6 +56,12 @@ public class FanoutCascadeMonitoringHandler implements Handler {
 
                     }
                 }
+            }
+            try {
+                // Sleep for 1 second
+                Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+            } catch (InterruptedException e) {
+                LOGGER.error("Error sleeping monitoring thread", e);
             }
         }
         return null;

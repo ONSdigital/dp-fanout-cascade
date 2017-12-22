@@ -18,15 +18,14 @@ public class FanoutCascade implements AutoCloseable {
 
     private static FanoutCascade INSTANCE = new FanoutCascade();
 
-    private Map<Class<? extends HandlerTask>, FanoutCascadeLayer> layers;
-    private boolean registeredShutdown = false;
-
-    private FanoutCascade() {
-        this.layers = new ConcurrentHashMap<>();
-    }
-
     public static FanoutCascade getInstance() {
         return INSTANCE;
+    }
+
+    private Map<Class<? extends HandlerTask>, FanoutCascadeLayer> layers;
+
+    private FanoutCascade() {
+        this.layers = emptyLayersMap();
     }
 
     public boolean hasLayer(Class<? extends HandlerTask> clazz) {
@@ -55,6 +54,15 @@ public class FanoutCascade implements AutoCloseable {
         return layers.get(clazz);
     }
 
+    public void purgeShutdownLayers() {
+        // Removes all layers which have shutdown
+        for (Class<? extends HandlerTask> clazz : this.layers.keySet()) {
+            if (this.layers.get(clazz).isShutdown()) {
+                this.layers.remove(clazz);
+            }
+        }
+    }
+
     public synchronized boolean isShutdown() {
         for (Class<? extends HandlerTask> clazz : getInstance().getRegisteredTasks()) {
             boolean isLayerShutdown = getInstance().getLayerForTask(clazz).isShutdown();
@@ -65,16 +73,47 @@ public class FanoutCascade implements AutoCloseable {
         return true;
     }
 
-    public boolean isRegisteredShutdown() {
-        return registeredShutdown;
+    public void registerShutdownThread() {
+        // Register a Runtime shutdown thread for the cascade
+        Runtime.getRuntime().addShutdownHook(new ShutDownThread());
     }
 
     @Override
     public void close() throws Exception {
         // Triggers close on all layers
-        this.registeredShutdown = true;
         for (Class<? extends HandlerTask> clazz : getInstance().getRegisteredTasks()) {
             getInstance().getLayerForTask(clazz).close();
         }
+
+        boolean isShutdown = false;
+        while (!isShutdown) {
+            isShutdown = true;
+            for (Class<? extends HandlerTask> clazz : getInstance().getRegisteredTasks()) {
+                if (!getInstance().getLayerForTask(clazz).isShutdown()) {
+                    isShutdown = false;
+                }
+            }
+        }
+    }
+
+    private static Map<Class<? extends HandlerTask>, FanoutCascadeLayer> emptyLayersMap() {
+        return new ConcurrentHashMap<>();
+    }
+
+    // Shutdown thread
+    public static class ShutDownThread extends Thread {
+
+        private final Logger LOGGER = LoggerFactory.getLogger(ShutDownThread.class);
+
+        @Override
+        public void run() {
+            try {
+                LOGGER.info("Triggering shutdown of all layers");
+                FanoutCascade.getInstance().close();
+            } catch (Exception e) {
+                LOGGER.error("Unable to shutdown FanoutCascace", e);
+            }
+        }
+
     }
 }

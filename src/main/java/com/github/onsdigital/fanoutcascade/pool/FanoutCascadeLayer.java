@@ -24,7 +24,7 @@ public class FanoutCascadeLayer implements AutoCloseable {
 
     protected FanoutCascadeLayer(int numThreads) {
         this.executorService = Executors.newFixedThreadPool(numThreads);
-        this.tasks = new ConcurrentHashMap<HandlerTask, Future<Object>>();
+        this.tasks = new ConcurrentHashMap<>();
     }
 
     public void submit(HandlerTask handlerTask) {
