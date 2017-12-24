@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
  */
 public class PurgingExceptionHandler implements ExceptionHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultExceptionHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PurgingExceptionHandler.class);
 
     // Logs the exception and purges the task from the layer
     @Override
