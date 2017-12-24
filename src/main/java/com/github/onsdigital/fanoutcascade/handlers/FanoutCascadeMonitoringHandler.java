@@ -44,7 +44,7 @@ public class FanoutCascadeMonitoringHandler implements Handler {
                             Object result = future.get();
                             if (null == result) {
                                 // Purge this task
-                                String message = String.format("FanoutCascadeMonitoringHandler found null result in layer %s, purging", layer);
+                                String message = String.format("FanoutCascadeMonitoringHandler found null result in layer %s, purging.", layer);
                                 LOGGER.info(message);
                                 layer.popFuture(task);
                             }
