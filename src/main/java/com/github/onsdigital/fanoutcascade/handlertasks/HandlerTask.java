@@ -42,7 +42,7 @@ public abstract class HandlerTask implements Callable<Object> {
                 obj = handler.handleTask(this);
             } catch (Exception e) {
                 // Handle any exception raised in the handler
-                FanoutCascadeLayer layer = FanoutCascade.getInstance().getLayerForTask(handlerTask);
+                FanoutCascadeLayer layer = FanoutCascade.getInstance().getLayerForTask(this.handlerTask);
                 FanoutCascadeRegistry.getInstance().getExceptionHandler().handleLayerException(this, layer, e);
             }
 
