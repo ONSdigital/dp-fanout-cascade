@@ -2,6 +2,7 @@ package com.github.onsdigital.fanoutcascade.handlertasks;
 
 import com.github.onsdigital.fanoutcascade.handlers.Handler;
 import com.github.onsdigital.fanoutcascade.pool.FanoutCascade;
+import com.github.onsdigital.fanoutcascade.pool.FanoutCascadeLayer;
 import com.github.onsdigital.fanoutcascade.pool.FanoutCascadeRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,14 @@ public abstract class HandlerTask implements Callable<Object> {
         Class<? extends Handler> clazz = FanoutCascadeRegistry.getInstance().getHandlerForTask(this.handlerTask);
         try {
             Handler handler = clazz.newInstance();
-            Object obj = handler.handleTask(this);
+            Object obj = null;
+            try {
+                obj = handler.handleTask(this);
+            } catch (Exception e) {
+                // Handle any exception raised in the handler
+                FanoutCascadeLayer layer = FanoutCascade.getInstance().getLayerForTask(handlerTask);
+                FanoutCascadeRegistry.getInstance().getExceptionHandler().handleLayerException(this, layer, e);
+            }
 
             if (obj instanceof HandlerTask) {
                 // Submit back into the cascade

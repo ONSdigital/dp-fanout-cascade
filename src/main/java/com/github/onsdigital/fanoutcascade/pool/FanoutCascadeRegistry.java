@@ -1,5 +1,7 @@
 package com.github.onsdigital.fanoutcascade.pool;
 
+import com.github.onsdigital.fanoutcascade.exceptions.DefaultExceptionHandler;
+import com.github.onsdigital.fanoutcascade.exceptions.ExceptionHandler;
 import com.github.onsdigital.fanoutcascade.handlers.FanoutCascadeMonitoringHandler;
 import com.github.onsdigital.fanoutcascade.handlers.Handler;
 import com.github.onsdigital.fanoutcascade.handlertasks.FanoutCascadeMonitoringTask;
@@ -15,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FanoutCascadeRegistry {
 
     private Map<Class<? extends HandlerTask>, Class<? extends Handler>> taskRegistry;
+    private ExceptionHandler exceptionHandler = new DefaultExceptionHandler();
 
     private static FanoutCascadeRegistry INSTANCE = new FanoutCascadeRegistry();
 
@@ -36,8 +39,7 @@ public class FanoutCascadeRegistry {
 
     public void registerMonitoringThread() {
         if (!taskRegistry.containsKey(FanoutCascadeMonitoringTask.class)) {
-            taskRegistry.put(FanoutCascadeMonitoringTask.class, FanoutCascadeMonitoringHandler.class);
-            FanoutCascade.getInstance().registerLayer(FanoutCascadeMonitoringTask.class, 1);
+            register(FanoutCascadeMonitoringTask.class, FanoutCascadeMonitoringHandler.class, 1);
         }
     }
 
@@ -47,4 +49,11 @@ public class FanoutCascadeRegistry {
         FanoutCascade.getInstance().registerLayer(task, numThreads);
     }
 
+    public ExceptionHandler getExceptionHandler() {
+        return exceptionHandler;
+    }
+
+    public void setExceptionHandler(ExceptionHandler exceptionHandler) {
+        this.exceptionHandler = exceptionHandler;
+    }
 }
