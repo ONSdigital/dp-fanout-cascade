@@ -8,6 +8,6 @@ import com.github.onsdigital.fanoutcascade.handlertasks.HandlerTask;
  */
 public interface Handler {
 
-    Object handleTask(HandlerTask handlerTask);
+    Object handleTask(HandlerTask handlerTask) throws Exception;
 
 }
