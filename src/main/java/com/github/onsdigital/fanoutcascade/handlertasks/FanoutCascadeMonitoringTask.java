@@ -30,7 +30,4 @@ public class FanoutCascadeMonitoringTask extends HandlerTask {
         return sleepTime;
     }
 
-    public void sleepThread() throws InterruptedException {
-        Thread.sleep(this.timeUnit.toMillis(this.sleepTime));
-    }
 }

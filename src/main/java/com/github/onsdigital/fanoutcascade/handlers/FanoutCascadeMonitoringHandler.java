@@ -60,11 +60,15 @@ public class FanoutCascadeMonitoringHandler implements Handler {
             }
             try {
                 // Sleep for 1 second
-                fanoutCascadeMonitoringTask.sleepThread();
+                this.sleepThread(fanoutCascadeMonitoringTask);
             } catch (InterruptedException e) {
                 LOGGER.error("Error sleeping monitoring thread", e);
             }
         }
         return null;
+    }
+
+    private static void sleepThread(FanoutCascadeMonitoringTask fanoutCascadeMonitoringTask) throws InterruptedException {
+        Thread.sleep(fanoutCascadeMonitoringTask.getTimeUnit().toMillis(fanoutCascadeMonitoringTask.getSleepTime()));
     }
 }
