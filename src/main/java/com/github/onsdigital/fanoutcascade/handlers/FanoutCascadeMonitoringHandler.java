@@ -1,5 +1,6 @@
 package com.github.onsdigital.fanoutcascade.handlers;
 
+import com.github.onsdigital.fanoutcascade.handlertasks.FanoutCascadeMonitoringTask;
 import com.github.onsdigital.fanoutcascade.handlertasks.HandlerTask;
 import com.github.onsdigital.fanoutcascade.pool.FanoutCascade;
 import com.github.onsdigital.fanoutcascade.pool.FanoutCascadeLayer;
@@ -22,7 +23,7 @@ public class FanoutCascadeMonitoringHandler implements Handler {
 
     @Override
     public Object handleTask(HandlerTask handlerTask) {
-        // We don't care about the task here, simply monitor the casade for null futures and purge them
+        FanoutCascadeMonitoringTask fanoutCascadeMonitoringTask = (FanoutCascadeMonitoringTask) handlerTask;
 
         while (!FanoutCascade.getInstance().isShutdown()) {
             Set<Class<? extends HandlerTask>> classSet = FanoutCascade.getInstance().getRegisteredTasks();
@@ -45,7 +46,7 @@ public class FanoutCascadeMonitoringHandler implements Handler {
                             if (null == result) {
                                 // Purge this task
                                 String message = String.format("FanoutCascadeMonitoringHandler found null result in layer %s, purging.", layer);
-                                LOGGER.info(message);
+                                if (LOGGER.isDebugEnabled()) LOGGER.debug(message);
                                 layer.popFuture(task);
                             }
                         } catch (InterruptedException e) {
@@ -59,7 +60,7 @@ public class FanoutCascadeMonitoringHandler implements Handler {
             }
             try {
                 // Sleep for 1 second
-                Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+                fanoutCascadeMonitoringTask.sleepThread();
             } catch (InterruptedException e) {
                 LOGGER.error("Error sleeping monitoring thread", e);
             }
