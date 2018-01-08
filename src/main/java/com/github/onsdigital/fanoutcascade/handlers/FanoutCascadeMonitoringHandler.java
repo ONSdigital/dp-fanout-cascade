@@ -59,8 +59,8 @@ public class FanoutCascadeMonitoringHandler implements Handler {
                 }
             }
             try {
-                // Sleep for 1 second
-                this.sleepThread(fanoutCascadeMonitoringTask);
+                // Sleep
+                sleepThread(fanoutCascadeMonitoringTask);
             } catch (InterruptedException e) {
                 LOGGER.error("Error sleeping monitoring thread", e);
             }

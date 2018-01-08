@@ -24,7 +24,7 @@ public abstract class HandlerTask implements Callable<Object> {
     }
 
     // Submit a task back into the cascade
-    private void handleTask(HandlerTask task) {
+    private void submitTask(HandlerTask task) {
         Class<? extends HandlerTask> taskClazz = task.getClass();
         if (FanoutCascade.getInstance().hasLayer(taskClazz)) {
             FanoutCascade.getInstance().getLayerForTask(taskClazz).submit(task);
@@ -49,21 +49,19 @@ public abstract class HandlerTask implements Callable<Object> {
             if (obj instanceof HandlerTask) {
                 // Submit back into the cascade
                 HandlerTask task = (HandlerTask) obj;
-                this.handleTask(task);
+                this.submitTask(task);
             } else if (obj instanceof Collection<?>) {
                 Collection<?> collection = (Collection<?>) obj;
                 for (Object o : collection) {
                     if (o instanceof HandlerTask) {
                         HandlerTask task = (HandlerTask) o;
-                        this.handleTask(task);
+                        this.submitTask(task);
                     }
                 }
             }
             return obj;
-        } catch (InstantiationException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             LOGGER.error("Error instantiating class", e);
-        } catch (IllegalAccessException e) {
-            LOGGER.error("Unable to instantiate class (illegal access)", e);
         }
         // Nothing to return
         return null;
