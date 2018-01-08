@@ -54,6 +54,9 @@ public class FanoutCascadeLayer implements AutoCloseable {
     }
 
     public synchronized boolean isIdle() {
+        if (this.tasks.isEmpty()) {
+            return true;
+        }
         for (HandlerTask task : this.getKeySet()) {
             if (!this.tasks.get(task).isDone()) {
                 return false;
